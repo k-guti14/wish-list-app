@@ -2,7 +2,9 @@ version: "3.9"
 
 services:
   app:
-    build: ./docker/php
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
     volumes:
       - ./src:/app
 
@@ -16,3 +18,29 @@ services:
     working_dir: /app
     depends_on:
       - app
+
+  db:
+    env_file:
+      - ./src/.env
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile
+      args:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - TZ=Asia/Tokyo
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_USERNAME}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Tokyo
+    volumes:
+      - db-store:/var/lib/mysql
+
+volumes:
+  db-store:
